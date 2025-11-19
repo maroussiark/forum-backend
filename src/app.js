@@ -5,7 +5,8 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFound } from "./middlewares/notFound.js";
 import { secureCors } from "./middlewares/cors.js";
 import { sanitize } from "./middlewares/sanitize.js";
-import authRoutes from "./routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";import userProfileRoutes from "./routes/userProfile.routes.js";
+
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", userProfileRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
