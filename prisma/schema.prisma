@@ -72,6 +72,8 @@ model Post {
   reactions Reaction[]
 
   comments Comment[]
+
+  postTags PostTag[]
 }
 
 model Category {
@@ -144,4 +146,21 @@ model Reaction {
 
   @@unique([userId, postId, commentId])
 }
+
+model Tag {
+  id      String @id
+  name    String @unique
+  posts   PostTag[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post   Post @relation(fields: [postId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
 
