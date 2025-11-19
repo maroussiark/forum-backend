@@ -28,6 +28,10 @@ model User {
   userProfiles UserProfile[]
 
   posts Post[]
+
+  reactions Reaction[]
+
+  comments Comment[]
 }
 model Role {
   id    String   @id
@@ -64,6 +68,10 @@ model Post {
   user        User          @relation(fields: [userId], references: [id])
   attachments Attachment[]
   category    Category?     @relation(fields: [categoryId], references: [id])
+
+  reactions Reaction[]
+
+  comments Comment[]
 }
 
 model Category {
@@ -105,4 +113,35 @@ model RolePermission {
 }
 
 
+model Comment {
+  id         String    @id
+  postId     String
+  userId     String
+  parentId   String? 
+  content    String
+  deleted    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  post       Post      @relation(fields: [postId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentReplies")
+  reactions  Reaction[]
+}
+
+model Reaction {
+  id           String    @id
+  userId       String
+  postId       String?
+  commentId    String?
+  reactionType String
+  createdAt    DateTime @default(now())
+
+  user         User      @relation(fields: [userId], references: [id])
+  post         Post?     @relation(fields: [postId], references: [id])
+  comment      Comment?  @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, postId, commentId])
+}
 
