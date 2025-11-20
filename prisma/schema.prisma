@@ -32,6 +32,10 @@ model User {
   reactions Reaction[]
 
   comments Comment[]
+
+  messages Message[]
+
+  conversationMembers ConversationMember[]
 }
 model Role {
   id    String   @id
@@ -163,4 +167,33 @@ model PostTag {
   @@id([postId, tagId])
 }
 
+model Conversation {
+  id         String               @id
+  createdAt  DateTime             @default(now())
+  messages   Message[]
+  members    ConversationMember[]
+}
+
+model ConversationMember {
+  conversationId String
+  userId         String
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@id([conversationId, userId])
+}
+
+model Message {
+  id              String    @id
+  conversationId  String
+  senderId        String
+  content         String?
+  attachmentUrl   String?
+  createdAt       DateTime  @default(now())
+  readAt          DateTime?
+  
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  sender          User         @relation(fields: [senderId], references: [id])
+}
 

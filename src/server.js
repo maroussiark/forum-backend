@@ -1,24 +1,11 @@
-import "dotenv/config";
-import express, { json } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
+import http from "http";
+import app from "./app.js";
+import { setupSockets } from "./src/sockets/socket.js";
 
-const app = express();
+const server = http.createServer(app);
 
-// Middlewares globaux
-app.use(cors());
-app.use(json());
-app.use(helmet());
-app.use(morgan("dev"));
+// initialiser websocket
+setupSockets(server);
 
-// Routes de test
-app.get("/", (req, res) => {
-  res.json({ message: "Forum backend is running" });
-});
-
-// Lancer le serveur
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log("API running on port " + PORT));

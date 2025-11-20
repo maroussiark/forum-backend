@@ -10,6 +10,8 @@ import postRoutes from "./routes/post.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 import reactionRoutes from "./routes/reaction.routes.js";
 import feedRoutes from "./routes/feed.routes.js";
+import conversationRoutes from "./routes/message/conversation.routes.js";
+import messageRoutes from "./routes/message/message.routes.js";
 
 
 const app = express();
@@ -23,6 +25,8 @@ app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/reactions", reactionRoutes);
 app.use("/api/feed",feedRoutes);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
