@@ -1,108 +1,52 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+
+/// ===============================
+/// USER, ROLES, PERMISSIONS
+/// ===============================
 
 model User {
-  id        String   @id
-  email     String   @unique
-  password  String
-  roleId    String
-  role      Role      @relation(fields: [roleId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  password          String
+  roleId            String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
-  userProfiles UserProfile[]
+  role              Role                 @relation(fields: [roleId], references: [id])
+  profile           UserProfile?
 
-  posts Post[]
-
-  reactions Reaction[]
-
-  comments Comment[]
-
-  messages Message[]
-
+  posts             Post[]
+  comments          Comment[]
+  reactions         Reaction[]
+  messages          Message[]
   conversationMembers ConversationMember[]
 
-  notifications Notification[] @relation("UserNotifications")
-
-  actornotifications Notification[] @relation("ActorNotifications")
+  notifications     Notification[]       @relation("UserNotifications")
+  actorNotifications Notification[]      @relation("ActorNotifications")
 }
-model Role {
-  id    String   @id
-  name  String   @unique
-  users User[]
 
+
+model Role {
+  id              String                @id @default(uuid())
+  name            String                @unique
+  description     String?
+
+  users           User[]
   rolePermissions RolePermission[]
 }
 
-model UserProfile {
-  id           String   @id
-  userId       String   @unique
-  fullName     String?
-  bio          String?
-  avatarUrl    String?
-  phone        String?
-  socialLinks  Json?
-  user         User     @relation(fields: [userId], references: [id])
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model Post {
-  id          String        @id
-  userId      String
-  title       String
-  content     String?
-  categoryId  String?
-  deleted     Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  user        User          @relation(fields: [userId], references: [id])
-  attachments Attachment[]
-  category    Category?     @relation(fields: [categoryId], references: [id])
-
-  reactions Reaction[]
-
-  comments Comment[]
-
-}
-
-model Category {
-  id          String    @id
-  name        String
-  description String?
-
-  posts       Post[]
-}
-
-model Attachment {
-  id         String   @id
-  postId     String
-  fileName   String
-  fileType   String
-  fileSize   Int
-  fileUrl    String
-  uploadedAt DateTime @default(now())
-
-  post       Post     @relation(fields: [postId], references: [id])
-}
-
 model Permission {
-  id          String  @id
-  name        String  @unique
+  id          String             @id @default(uuid())
+  name        String             @unique
   description String?
 
   roles       RolePermission[]
@@ -119,11 +63,78 @@ model RolePermission {
 }
 
 
+/// ===============================
+/// USER PROFILE
+/// ===============================
+
+model UserProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  fullName    String?
+  bio         String?
+  avatarUrl   String?
+  phone       String?
+  socialLinks Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+
+/// ===============================
+/// POSTS / CATEGORIES / ATTACHMENTS
+/// ===============================
+
+model Post {
+  id          String        @id @default(uuid())
+  userId      String
+  title       String
+  content     String?
+  categoryId  String?
+  deleted     Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id])
+  category    Category?     @relation(fields: [categoryId], references: [id])
+
+  attachments Attachment[]
+  comments    Comment[]
+  reactions   Reaction[]
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+
+  posts       Post[]
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  postId     String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  fileUrl    String
+  uploadedAt DateTime @default(now())
+
+  post       Post     @relation(fields: [postId], references: [id])
+}
+
+
+/// ===============================
+/// COMMENTS (avec replies)
+/// ===============================
+
 model Comment {
-  id         String    @id
+  id         String    @id @default(uuid())
   postId     String
   userId     String
-  parentId   String? 
+  parentId   String?
   content    String
   deleted    Boolean   @default(false)
   createdAt  DateTime  @default(now())
@@ -131,30 +142,43 @@ model Comment {
 
   post       Post      @relation(fields: [postId], references: [id])
   user       User      @relation(fields: [userId], references: [id])
+
   parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies    Comment[] @relation("CommentReplies")
+
   reactions  Reaction[]
 }
 
+
+/// ===============================
+/// REACTIONS (Post OR Comment, XOR unique)
+/// ===============================
+
 model Reaction {
-  id           String    @id
+  id           String    @id @default(uuid())
   userId       String
   postId       String?
   commentId    String?
   reactionType String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
   user         User      @relation(fields: [userId], references: [id])
   post         Post?     @relation(fields: [postId], references: [id])
   comment      Comment?  @relation(fields: [commentId], references: [id])
 
+  // 🔥 UNIQUE: 1 reaction par user sur un post/comment
   @@unique([userId, postId, commentId])
 }
 
 
+/// ===============================
+/// CONVERSATIONS & MESSAGES
+/// ===============================
+
 model Conversation {
-  id         String               @id
+  id         String               @id @default(uuid())
   createdAt  DateTime             @default(now())
+
   messages   Message[]
   members    ConversationMember[]
 }
@@ -170,32 +194,37 @@ model ConversationMember {
 }
 
 model Message {
-  id              String    @id
+  id              String      @id @default(uuid())
   conversationId  String
   senderId        String
   content         String?
   attachmentUrl   String?
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime    @default(now())
   readAt          DateTime?
-  
+
   conversation    Conversation @relation(fields: [conversationId], references: [id])
   sender          User         @relation(fields: [senderId], references: [id])
 }
 
+
+/// ===============================
+/// NOTIFICATIONS
+/// ===============================
+
 model Notification {
-  id            String              @id @default(uuid())
-  userId        String              // destinataire
-  actorId       String?             // celui qui a déclenché l'action
+  id            String           @id @default(uuid())
+  userId        String
+  actorId       String?
   type          NotificationType
   title         String
   message       String?
-  entityId      String?             // ID du post / comment / message / conversation
+  entityId      String?
   entityType    EntityType?
-  isRead        Boolean             @default(false)
-  createdAt     DateTime            @default(now())
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
 
-  user          User                @relation("UserNotifications", fields: [userId], references: [id])
-  actor         User?               @relation("ActorNotifications", fields: [actorId], references: [id])
+  user          User             @relation("UserNotifications", fields: [userId], references: [id])
+  actor         User?            @relation("ActorNotifications", fields: [actorId], references: [id])
 }
 
 enum NotificationType {
