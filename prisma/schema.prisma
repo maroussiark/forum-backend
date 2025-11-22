@@ -11,15 +11,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
   id        String   @id
   email     String   @unique
   password  String
-  fullName  String?
-  avatar    String?
   roleId    String
   role      Role      @relation(fields: [roleId], references: [id])
   createdAt DateTime @default(now())

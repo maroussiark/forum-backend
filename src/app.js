@@ -12,11 +12,20 @@ import reactionRoutes from "./routes/reaction.routes.js";
 import feedRoutes from "./routes/feed.routes.js";
 import conversationRoutes from "./routes/message/conversation.routes.js";
 import messageRoutes from "./routes/message/message.routes.js";
+import helmet from "helmet";
+import morgan from "morgan";
 
 
 const app = express();
 
+app.use(secureCors);
+app.use(sanitize);
+app.use(helmet())
+app.use(morgan("combined"));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/auth", authRoutes);
@@ -30,7 +39,5 @@ app.use("/api/messages", messageRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
-app.use(secureCors);
-app.use(sanitize);
 
 export default app;

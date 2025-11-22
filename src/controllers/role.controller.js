@@ -22,7 +22,7 @@ class RoleController {
 
   async getOne(req, res, next) {
     try {
-      const role = await RoleService.getRoleById(Number(req.params.id));
+      const role = await RoleService.getRoleById(req.params.id);
       return success(res, role);
     } catch (err) {
       next(err);

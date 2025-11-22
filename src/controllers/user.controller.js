@@ -5,7 +5,7 @@ class UserController {
   async updateProfile(req, res, next) {
     try {
       const user = await UserService.updateProfile(
-        Number(req.params.id),
+        req.params.id,
         req.body,
       );
       return success(res, user, "Profil mis à jour");
@@ -18,7 +18,7 @@ class UserController {
     try {
       const { oldPassword, newPassword } = req.body;
       await UserService.updatePassword(
-        Number(req.params.id),
+        req.params.id,
         oldPassword,
         newPassword,
       );
@@ -42,7 +42,7 @@ class UserController {
 
   async delete(req, res, next) {
     try {
-      await UserService.deleteUser(Number(req.params.id));
+      await UserService.deleteUser(req.params.id);
       return success(res, null, "Utilisateur supprimé");
     } catch (err) {
       next(err);

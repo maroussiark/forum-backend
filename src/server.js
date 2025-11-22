@@ -1,6 +1,6 @@
 import http from "http";
 import app from "./app.js";
-import { setupSockets } from "./src/sockets/socket.js";
+import { setupSockets } from "./sockets/socket.js";
 
 const server = http.createServer(app);
 
