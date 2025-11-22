@@ -1,8 +1,8 @@
 import prisma from "../../config/database.js";
 import { generateId } from "../../utils/idGenerator.js";
+import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 
 class MessageService {
-
   async sendMessage(conversationId, senderId, content, attachmentUrl) {
     const id = await generateId("message", "MSG-");
 
@@ -12,11 +12,11 @@ class MessageService {
         conversationId,
         senderId,
         content,
-        attachmentUrl
+        attachmentUrl,
       },
       include: {
-        sender: true
-      }
+        sender: { select: safeUserSelect },
+      },
     });
   }
 
@@ -25,7 +25,7 @@ class MessageService {
       where: { conversationId },
       orderBy: { createdAt: "desc" },
       take: Number(limit),
-      include: { sender: true }
+      include: { sender: { select: safeUserSelect } },
     };
 
     if (cursor) {
@@ -35,7 +35,9 @@ class MessageService {
 
     const messages = await prisma.message.findMany(query);
 
-    const nextCursor = messages.length ? messages[messages.length - 1].id : null;
+    const nextCursor = messages.length
+      ? messages[messages.length - 1].id
+      : null;
 
     return { messages, nextCursor };
   }
@@ -43,7 +45,7 @@ class MessageService {
   async markAsRead(messageId) {
     return prisma.message.update({
       where: { id: messageId },
-      data: { readAt: new Date() }
+      data: { readAt: new Date() },
     });
   }
 }

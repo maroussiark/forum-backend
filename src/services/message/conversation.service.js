@@ -1,5 +1,6 @@
 import prisma from "../../config/database.js";
 import { generateId } from "../../utils/idGenerator.js";
+import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 
 class ConversationService {
 
@@ -15,7 +16,7 @@ class ConversationService {
           }))
         }
       },
-      include: { members: true }
+      include: { members: {select : safeUserSelect} }
     });
 
     return conversation;
@@ -29,7 +30,7 @@ class ConversationService {
         }
       },
       include: {
-        members: { include: { user: true } },
+        members: { include: { user: {select : safeUserSelect} } },
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1
