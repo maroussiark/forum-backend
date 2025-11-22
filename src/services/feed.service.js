@@ -2,11 +2,9 @@ import prisma from "../config/database.js";
 import { safeUserSelect } from "../shared/selectors/safeUserSelect.js";
 
 class FeedService {
-
   async getFeed({ cursor, limit = 10, categoryId, tagId, sort = "recent" }) {
-
     const filters = {
-      deleted: false
+      deleted: false,
     };
 
     if (categoryId) filters.categoryId = categoryId;
@@ -16,8 +14,8 @@ class FeedService {
     if (tagId) {
       tagFilter = {
         tags: {
-          some: { tagId }
-        }
+          some: { tagId },
+        },
       };
     }
 
@@ -26,7 +24,7 @@ class FeedService {
 
     if (sort === "popular") {
       orderBy = {
-        reactions: { _count: "desc" }
+        reactions: { _count: "desc" },
       };
     }
 
@@ -34,16 +32,17 @@ class FeedService {
     const query = {
       where: {
         ...filters,
-        ...tagFilter
+        ...tagFilter,
       },
       take: Number(limit),
       orderBy,
       include: {
         user: { select: safeUserSelect },
-        attachments: true,
-        reactions: true,
-        comments: true
-      }
+        _count: {
+          select: { comments: true, reactions: true },
+        },
+        attachments: true
+      },
     };
 
     if (cursor) {
@@ -57,7 +56,7 @@ class FeedService {
 
     return {
       items: posts,
-      nextCursor
+      nextCursor,
     };
   }
 }
