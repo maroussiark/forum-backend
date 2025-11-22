@@ -1,4 +1,5 @@
 import prisma from "../config/database.js";
+import { safeUserSelect } from "../shared/selectors/safeUserSelect.js";
 
 class FeedService {
 
@@ -38,7 +39,7 @@ class FeedService {
       take: Number(limit),
       orderBy,
       include: {
-        user: true,
+        user: { select: safeUserSelect },
         attachments: true,
         reactions: true,
         comments: true

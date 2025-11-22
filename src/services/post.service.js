@@ -1,5 +1,6 @@
 import prisma from "../config/database.js";
 import { generateId } from "../utils/idGenerator.js";
+import { safeUserSelect } from "../shared/selectors/safeUserSelect.js";
 
 class PostService {
 
@@ -49,7 +50,7 @@ class PostService {
     return prisma.post.findFirst({
       where: { id: postId, deleted: false },
       include: {
-        user: true,
+        user: { select: safeUserSelect },
         attachments: true,
         category: true
       }
@@ -67,7 +68,7 @@ class PostService {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: {
-          user: true,
+          user: { select: safeUserSelect },
           attachments: true
         }
       })

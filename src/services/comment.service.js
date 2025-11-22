@@ -1,5 +1,6 @@
 import prisma from "../config/database.js";
 import { generateId } from "../utils/idGenerator.js";
+import { safeUserSelect } from "../shared/selectors/safeUserSelect.js";
 
 class CommentService {
 
@@ -62,11 +63,11 @@ class CommentService {
         skip,
         take: limit,
         include: {
-          user: true,
+          user: { select: safeUserSelect },
           replies: {
             where: { deleted: false },
             include: {
-              user: true
+              user: { select: safeUserSelect }
             }
           },
           reactions: true

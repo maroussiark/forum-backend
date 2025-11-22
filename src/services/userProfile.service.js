@@ -1,12 +1,13 @@
 import prisma from "../config/database.js";
 import { generateId } from "../utils/idGenerator.js";
+import { safeUserSelect } from "../shared/selectors/safeUserSelect.js";
 
 class UserProfileService {
 
   async getProfile(userId) {
     const profile = await prisma.userProfile.findUnique({
       where: { userId },
-      include: { user: true }
+      include: { user: { select: safeUserSelect } }
     });
 
     if (!profile) throw { status: 404, message: "Profil introuvable" };
