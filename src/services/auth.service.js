@@ -7,8 +7,9 @@ dotenv.config();
 
 class AuthService {
   generateAccessToken(user) {
+    const isModerator = user.roleId === "ROLE-00001" || user.roleId === "ROLE-00002";
     return jwt.sign(
-      { id: user.id, roleId: user.roleId },
+      { id: user.id, roleId: user.roleId, isModerator },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES }
     );
@@ -33,7 +34,7 @@ class AuthService {
         email,
         password: hashed,
         fullName,
-        roleId: 3 // ROLE : MEMBER par défaut
+        roleId: 3
       },
     });
 
@@ -59,14 +60,14 @@ class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.fullName
       },
       accessToken: this.generateAccessToken(user),
       refreshToken: this.generateRefreshToken(user)
     };
   }
 
-  async refreshToken(token) {
+  async refreshAccessToken(token) {
     try {
       const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
 
