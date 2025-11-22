@@ -8,19 +8,19 @@ import { generateRandomToken, hashToken } from "./auth.utils.js";
 dotenv.config();
 
 class AuthService {
-
   generateAccessToken(user, permissions = []) {
-    const isModerator = user.roleId === "ROLE-00001" || user.roleId === "ROLE-00002";
+    const isModerator =
+      user.roleId === "ROLE-00001" || user.roleId === "ROLE-00002";
 
     return jwt.sign(
       {
         id: user.id,
         roleId: user.roleId,
         permissions,
-        isModerator
+        isModerator,
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES }
+      { expiresIn: process.env.JWT_EXPIRES },
     );
   }
 
@@ -31,15 +31,17 @@ class AuthService {
     await prisma.refreshToken.create({
       data: {
         userId,
-        token: hashed
-      }
+        token: hashed,
+      },
     });
 
     return refreshToken;
   }
 
   async register(data) {
-    const exists = await prisma.user.findUnique({ where: { email: data.email } });
+    const exists = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
     if (exists) throw badRequest("Email déjà utilisé");
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -49,8 +51,19 @@ class AuthService {
         email: data.email,
         password: hashedPassword,
         fullName: data.fullName,
-        roleId: "ROLE-00003"
-      }
+        roleId: "ROLE-00003",
+      },
+    });
+
+    await prisma.userProfile.create({
+      data: {
+        userId: user.id,
+        fullName: data.fullName,
+        bio: "",
+        avatarUrl: "",
+        phone: "",
+        socialLinks: {},
+      },
     });
 
     const permissions = await this.getPermissions(user.roleId);
@@ -62,10 +75,10 @@ class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName
+        fullName: user.fullName,
       },
       accessToken,
-      refreshToken
+      refreshToken,
     };
   }
 
@@ -85,10 +98,10 @@ class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName
+        fullName: user.fullName,
       },
       accessToken,
-      refreshToken
+      refreshToken,
     };
   }
 
@@ -96,13 +109,13 @@ class AuthService {
     const hashed = hashToken(refreshToken);
 
     const stored = await prisma.refreshToken.findFirst({
-      where: { token: hashed }
+      where: { token: hashed },
     });
 
     if (!stored) throw unauthorized("Refresh token invalide");
 
     const user = await prisma.user.findUnique({
-      where: { id: stored.userId }
+      where: { id: stored.userId },
     });
 
     if (!user) throw unauthorized("Utilisateur non trouvé");
@@ -121,7 +134,7 @@ class AuthService {
   async getPermissions(roleId) {
     const permissions = await prisma.rolePermission.findMany({
       where: { roleId },
-      include: { permission: true }
+      include: { permission: true },
     });
 
     return permissions.map((p) => p.permission.name);
