@@ -33,6 +33,10 @@ model User {
   messages Message[]
 
   conversationMembers ConversationMember[]
+
+  notifications Notification[] @relation("UserNotifications")
+
+  actornotifications Notification[] @relation("ActorNotifications")
 }
 model Role {
   id    String   @id
@@ -74,7 +78,6 @@ model Post {
 
   comments Comment[]
 
-  postTags PostTag[]
 }
 
 model Category {
@@ -148,21 +151,6 @@ model Reaction {
   @@unique([userId, postId, commentId])
 }
 
-model Tag {
-  id      String @id
-  name    String @unique
-  posts   PostTag[]
-}
-
-model PostTag {
-  postId String
-  tagId  String
-
-  post   Post @relation(fields: [postId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
-
-  @@id([postId, tagId])
-}
 
 model Conversation {
   id         String               @id
@@ -194,3 +182,41 @@ model Message {
   sender          User         @relation(fields: [senderId], references: [id])
 }
 
+model Notification {
+  id            String              @id @default(uuid())
+  userId        String              // destinataire
+  actorId       String?             // celui qui a déclenché l'action
+  type          NotificationType
+  title         String
+  message       String?
+  entityId      String?             // ID du post / comment / message / conversation
+  entityType    EntityType?
+  isRead        Boolean             @default(false)
+  createdAt     DateTime            @default(now())
+
+  user          User                @relation("UserNotifications", fields: [userId], references: [id])
+  actor         User?               @relation("ActorNotifications", fields: [actorId], references: [id])
+}
+
+enum NotificationType {
+  POST_CREATED
+  POST_COMMENTED
+  POST_REACTED
+  
+  COMMENT_REACTED
+  COMMENT_REPLIED
+
+  MESSAGE_RECEIVED
+  CONVERSATION_JOINED
+
+  PROFILE_UPDATED
+  SYSTEM
+}
+
+enum EntityType {
+  POST
+  COMMENT
+  MESSAGE
+  CONVERSATION
+  PROFILE
+}

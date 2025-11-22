@@ -3,7 +3,7 @@ import { success } from "../../utils/apiResponse.js";
 
 class ReactionController {
   async react(req, res) {
-    const result = await ReactionService.react(req.user.id, req.body);
+    const result = await ReactionService.react(req.user.id, req.body, req.io);
     return success(res, result, "Réaction enregistrée");
   }
 

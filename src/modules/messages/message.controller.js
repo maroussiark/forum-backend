@@ -19,7 +19,7 @@ class MessageController {
     const msg = await ConversationService.sendMessage(
       req.body.conversationId,
       req.user.id,
-      req.body.content
+      req.body.content,req.io
     );
 
     req.io.to(req.body.conversationId).emit("message:new", msg);
