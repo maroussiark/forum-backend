@@ -1,4 +1,4 @@
-import AuthService from "../services/auth.service.js";
+import AuthService from "./auth.service.js";
 import { success } from "../utils/apiResponse.js";
 import { badRequest } from "../shared/errors/ApiError.js";
 
