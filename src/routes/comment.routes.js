@@ -2,6 +2,7 @@ import { Router } from "express";
 import CommentController from "../controllers/comment.controller.js";
 import { auth } from "../middlewares/auth.js";
 import { requirePermission } from "../middlewares/requirePermission.js";
+import { asyncHandler } from "../shared/middlewares/asyncHandler.js";
 
 const router = Router();
 
@@ -9,26 +10,23 @@ router.post(
   "/",
   auth(),
   requirePermission("COMMENT_CREATE"),
-  CommentController.add
+  asyncHandler(CommentController.add),
 );
 
 router.put(
   "/:commentId",
   auth(),
   requirePermission("COMMENT_EDIT"),
-  CommentController.update
+  asyncHandler(CommentController.update),
 );
 
 router.delete(
   "/:commentId",
   auth(),
   requirePermission("COMMENT_DELETE"),
-  CommentController.remove
+  asyncHandler(CommentController.remove),
 );
 
-router.get(
-  "/post/:postId",
-  CommentController.list
-);
+router.get("/post/:postId", asyncHandler(CommentController.list));
 
 export default router;

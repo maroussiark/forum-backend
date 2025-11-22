@@ -3,6 +3,7 @@ import PostController from "../controllers/post.controller.js";
 import Upload from "../middlewares/upload.middleware.js";
 import { auth } from "../middlewares/auth.js";
 import { requirePermission } from "../middlewares/requirePermission.js";
+import { asyncHandler } from "../shared/middlewares/asyncHandler.js";
 
 const router = Router();
 
@@ -11,38 +12,38 @@ router.post(
   auth(),
   requirePermission("POST_CREATE"),
   Upload.uploadMultiple("files"),
-  PostController.create
+  asyncHandler(PostController.create),
 );
 
-router.get("/", PostController.list);
-router.get("/:postId", PostController.getOne);
+router.get("/", asyncHandler(PostController.list));
+router.get("/:postId", asyncHandler(PostController.getOne));
 
 router.put(
   "/:postId",
   auth(),
   requirePermission("POST_EDIT"),
-  PostController.update
+  asyncHandler(PostController.update),
 );
 
 router.delete(
   "/:postId",
   auth(),
   requirePermission("POST_DELETE"),
-  PostController.delete
+  asyncHandler(PostController.delete),
 );
 
 router.post(
   "/:postId/files",
   auth(),
   Upload.uploadMultiple("files"),
-  PostController.uploadFiles
+  asyncHandler(PostController.uploadFiles),
 );
 
 router.delete(
   "/file/:attachmentId",
   auth(),
   requirePermission("POST_DELETE"),
-  PostController.deleteFile
+  asyncHandler(PostController.deleteFile),
 );
 
 export default router;

@@ -2,8 +2,7 @@ import FeedService from "../services/feed.service.js";
 import { success } from "../utils/apiResponse.js";
 
 class FeedController {
-  async list(req, res, next) {
-    try {
+  async list(req, res) {
       const data = await FeedService.getFeed({
         cursor: req.query.cursor || null,
         limit: req.query.limit || 10,
@@ -13,9 +12,6 @@ class FeedController {
       });
 
       return success(res, data);
-    } catch (err) {
-      next(err);
-    }
   }
 }
 
