@@ -1,12 +1,12 @@
 import http from "http";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
-import app from "./src/app.js";
-import logger from "./src/shared/logger/logger.js";
+import app from "./app.js";
+import logger from "./shared/logger/logger.js";
 
-import { registerNotificationSocket } from "./src/sockets/notification.socket.js";
-import { registerMessageSocket } from "./src/sockets/message.socket.js";
-import { registerProfileSocket } from "./src/sockets/profile.socket.js";
+import { registerNotificationSocket } from "./sockets/notification.socket.js";
+import { registerMessageSocket } from "./sockets/message.socket.js";
+import { registerProfileSocket } from "./sockets/profile.socket.js";
 
 
 dotenv.config();

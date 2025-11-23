@@ -18,12 +18,7 @@ export const uploadAttachments = multer({
   limits: { fileSize: uploadConfig.limits.default }
 }).array("files", 10);
 
-/**
- * Retourne la liste des fichiers préparés pour traitement :
- * - chemin temporaire
- * - nom final
- * - type
- */
+
 export async function prepareFiles(files) {
   const prepared = [];
 

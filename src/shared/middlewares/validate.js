@@ -1,21 +1,20 @@
 import { badRequest } from "../errors/ApiError.js";
 
-export const validate = (schema, property = "body") => (req, res, next) => {
-  const { error, value } = schema.validate(req[property], {
-    abortEarly: false,
-    stripUnknown: true
-  });
+export const validate = (schema, property = "body") => {
+  return (req, res, next) => {
+    const data = req[property];
 
-  if (error) {
-    return next(
-      badRequest(
-        "Validation error",
-        "VALIDATION_ERROR",
-        error.details.map((d) => d.message)
-      )
-    );
-  }
+    const { value, error } = schema.validate(data, {
+      abortEarly: false,
+      stripUnknown: true
+    });
 
-  req[property] = value;
-  next();
+    if (error) {
+      throw badRequest(error.details.map(e => e.message).join(", "));
+    }
+
+    Object.assign(req[property], value);
+
+    next();
+  };
 };

@@ -8,7 +8,7 @@ import { generateRandomToken, hashToken } from "./auth.utils.js";
 dotenv.config();
 
 class AuthService {
-  generateAccessToken(user, permissions = []) {
+  generateAccessToken(user) {
     const isModerator =
       user.roleId === "ROLE-00001" || user.roleId === "ROLE-00002";
 
@@ -16,7 +16,6 @@ class AuthService {
       {
         id: user.id,
         roleId: user.roleId,
-        permissions,
         isModerator,
       },
       process.env.JWT_SECRET,
@@ -27,11 +26,13 @@ class AuthService {
   async generateAndStoreRefreshToken(userId) {
     const refreshToken = generateRandomToken();
     const hashed = hashToken(refreshToken);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await prisma.refreshToken.create({
       data: {
         userId,
-        token: hashed,
+        tokenHash: hashed,
+        expiresAt
       },
     });
 
@@ -50,7 +51,6 @@ class AuthService {
       data: {
         email: data.email,
         password: hashedPassword,
-        fullName: data.fullName,
         roleId: "ROLE-00003",
       },
     });
@@ -109,7 +109,7 @@ class AuthService {
     const hashed = hashToken(refreshToken);
 
     const stored = await prisma.refreshToken.findFirst({
-      where: { token: hashed },
+      where: { tokenHash: hashed },
     });
 
     if (!stored) throw unauthorized("Refresh token invalide");

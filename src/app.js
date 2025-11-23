@@ -54,15 +54,16 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.use(
-  "*",
+  /(.*)/,
   asyncHandler((req, res) => {
     return res.status(404).json({
       status: 404,
       code: "NOT_FOUND",
       message: "Route introuvable",
     });
-  }),
+  })
 );
+
 
 app.use(errorHandler);
 

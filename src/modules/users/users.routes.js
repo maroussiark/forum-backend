@@ -16,7 +16,7 @@ router.get(
 router.put(
   "/:userId",
   auth(),
-  requirePermission("USER_UPDATE"),
+  requirePermission("PROFILE_UPDATE"),
   validate(updateUserSchema),
   asyncHandler(UsersController.updateUser)
 );

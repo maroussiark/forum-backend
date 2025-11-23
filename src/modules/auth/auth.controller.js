@@ -1,6 +1,6 @@
 import AuthService from "./auth.service.js";
-import { success } from "../utils/apiResponse.js";
-import { badRequest } from "../shared/errors/ApiError.js";
+import { success } from "../../utils/apiResponse.js";
+import { badRequest } from "../../shared/errors/ApiError.js";
 
 class AuthController {
 
@@ -18,7 +18,7 @@ class AuthController {
     const token = req.body.refreshToken;
     if (!token) throw badRequest("Aucun refresh token envoyé", "NO_REFRESH_TOKEN");
 
-    const data = await AuthService.refreshToken(token);
+    const data = await AuthService.refresh(token);
     return success(res, data, "Token renouvelé");
   }
 }

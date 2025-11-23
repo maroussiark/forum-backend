@@ -7,10 +7,27 @@ import { requirePermission } from "../../middlewares/requirePermission.js";
 import { sendMessageSchema, messageListSchema } from "./message.validator.js";
 import ConversationService from "./conversation.service.js";
 import { forbidden } from "../../shared/errors/ApiError.js";
+import ConversationController from "./conversation.controller.js";
+import { createConversationSchema } from "./conversation.validator.js";
 
 const router = Router();
 
 // Check membership before listing messages
+router.post(
+  "/conversations",
+  auth(),
+  requirePermission("CONVERSATION_CREATE"),
+  validate(createConversationSchema),
+  asyncHandler(ConversationController.create)
+);
+
+router.get(
+  "/conversations",
+  auth(),
+  requirePermission("CONVERSATION_LIST"),
+  asyncHandler(ConversationController.listConversations)
+);
+
 router.get(
   "/:conversationId",
   auth(),

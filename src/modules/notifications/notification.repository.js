@@ -16,7 +16,7 @@ class NotificationRepository {
         actor: {
           select: {
             id: true,
-            userProfiles: {
+            profile: {
               select: { fullName: true, avatarUrl: true }
             }
           }

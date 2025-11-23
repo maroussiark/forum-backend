@@ -24,7 +24,7 @@ class UsersService {
 
     const allowed = {};
     if (data.email) allowed.email = data.email;
-    if (data.fullName) allowed.fullName = data.fullName;
+    if (data.password) allowed.password = data.password;
 
     return prisma.user.update({
       where: { id: userId },

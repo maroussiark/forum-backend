@@ -8,12 +8,12 @@ import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 import NotificationService from "../notifications/notification.service.js";
 
 class ReactionService {
-  
   async react(userId, data, io) {
     const { postId, commentId, type } = data;
 
     if (!postId && !commentId) throw badRequest("postId XOR commentId requis");
-    if (postId && commentId) throw badRequest("Envoyer seulement postId ou commentId, pas les deux");
+    if (postId && commentId)
+      throw badRequest("Envoyer seulement postId ou commentId, pas les deux");
 
     let entity;
     let entityType;
@@ -22,7 +22,7 @@ class ReactionService {
     if (postId) {
       entity = await prisma.post.findUnique({
         where: { id: postId, deleted: false },
-        include: { user: true }
+        include: { user: true },
       });
 
       if (!entity) throw notFound("Post introuvable");
@@ -36,8 +36,8 @@ class ReactionService {
         where: { id: commentId },
         include: {
           user: true,
-          post: true
-        }
+          post: true,
+        },
       });
 
       if (!entity) throw notFound("Commentaire introuvable");
@@ -48,33 +48,34 @@ class ReactionService {
 
     const profile = await prisma.userProfile.findUnique({
       where: { userId },
-      select: { fullName: true }
+      select: { fullName: true },
     });
 
+    const isPost = !!postId;
+
+    const where = isPost
+      ? { userId_postId: { userId, postId } }
+      : { userId_commentId: { userId, commentId } };
+
     const reaction = await prisma.reaction.upsert({
-      where: {
-        userId_postId_commentId: {
-          userId,
-          postId: postId || null,
-          commentId: commentId || null
-        }
-      },
-      update: { type },
+      where,
+      update: { reactionType: type },
       create: {
         userId,
-        postId: postId || null,
-        commentId: commentId || null,
-        type
+        postId: postId ?? null,
+        commentId: commentId ?? null,
+        reactionType: type,
       },
       include: {
-        user: { select: safeUserSelect }
-      }
+        user: { select: safeUserSelect },
+      },
     });
 
     if (ownerId !== userId) {
-      const title = entityType === "POST"
-        ? "Nouvelle réaction sur votre post"
-        : "Nouvelle réaction sur votre commentaire";
+      const title =
+        entityType === "POST"
+          ? "Nouvelle réaction sur votre post"
+          : "Nouvelle réaction sur votre commentaire";
 
       const text = `${profile.fullName} a réagi à votre ${entityType === "POST" ? "post" : "commentaire"}`;
 
@@ -86,7 +87,7 @@ class ReactionService {
         text,
         postId || commentId,
         entityType,
-        io
+        io,
       );
     }
 

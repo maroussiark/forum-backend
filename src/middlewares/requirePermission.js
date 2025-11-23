@@ -5,7 +5,7 @@ export const requirePermission = (permissionCode) => {
    return (req, res, next) => {
     if (!req.user) throw forbidden("Authentification requise");
 
-    const role = req.user.role;
+    const role = req.user.roleId;
 
     const allowedPermissions = ACL[role] || [];
 
