@@ -85,7 +85,7 @@ class ConversationService {
     const message = await prisma.message.create({
       data: {
         conversationId,
-        userId: senderId,
+        senderId: senderId,
         content,
       },
       include: {
