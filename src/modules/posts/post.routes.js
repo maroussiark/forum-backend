@@ -15,6 +15,7 @@ const router = Router();
 
 router.get(
   "/",
+  auth(),
   validate(listPostsSchema, "query"),
   asyncHandler(PostController.list)
 );

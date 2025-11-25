@@ -41,6 +41,7 @@ class PostController {
       Number(page),
       Number(limit),
       categoryId,
+      req.user?.id
     );
     return success(res, posts);
   }

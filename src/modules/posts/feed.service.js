@@ -2,15 +2,13 @@ import prisma from "../../config/database.js";
 import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 
 class FeedService {
-
-  async list(page, limit, categoryId) {
-
+  async list(page, limit, categoryId, userId) {
     const where = {
       deleted: false,
       ...(categoryId ? { categoryId } : {})
     };
 
-    return prisma.post.findMany({
+    const posts = await prisma.post.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
@@ -23,6 +21,27 @@ class FeedService {
         }
       }
     });
+
+    if (userId) {
+      for (const post of posts) {
+        const reaction = await prisma.reaction.findFirst({
+          where: {
+            postId: post.id,
+            userId: userId
+          },
+          select: {
+            id: true,
+            reactionType: true
+          }
+        });
+
+        post.myReaction = reaction || null;
+      }
+    } else {
+      for (const post of posts) post.myReaction = null;
+    }
+
+    return posts;
   }
 }
 

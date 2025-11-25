@@ -198,17 +198,18 @@ model ConversationMember {
 }
 
 model Message {
-  id              String      @id @default(uuid())
+  id              String   @id
   conversationId  String
   senderId        String
   content         String?
   attachmentUrl   String?
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime @default(now())
   readAt          DateTime?
 
   conversation    Conversation @relation(fields: [conversationId], references: [id])
   sender          User         @relation(fields: [senderId], references: [id])
 }
+
 
 
 /// ===============================
