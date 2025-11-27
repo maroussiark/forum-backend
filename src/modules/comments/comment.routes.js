@@ -11,6 +11,12 @@ import {
 
 const router = Router();
 
+router.get(
+  "/",
+  auth(),
+  asyncHandler(CommentController.list)
+);
+
 router.post(
   "/",
   auth(),

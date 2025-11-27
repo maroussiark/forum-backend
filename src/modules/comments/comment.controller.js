@@ -3,6 +3,11 @@ import { success } from "../../utils/apiResponse.js";
 
 class CommentController {
 
+  async list(req, res) {
+    const result = await CommentService.list(req.query);
+    return success(res, result, "Liste des commentaires");
+  }
+  
   async create(req, res) {
     const result = await CommentService.create(req.user.id, req.body, req.io);
     return success(res, result, "Commentaire ajouté", 201);

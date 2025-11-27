@@ -73,6 +73,19 @@ class CommentService {
 
     return prisma.comment.delete({ where: { id: commentId } });
   }
+
+  async list(postId, skip = 0, take = 20) {
+    return prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: "asc" },
+      skip,
+      take,
+      include: {
+        user: { select: safeUserSelect },
+        _count: { select: { reactions: true } },
+      },
+    });
+  }
 }
 
 export default new CommentService();
