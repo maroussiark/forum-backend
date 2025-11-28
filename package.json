@@ -1,13 +1,14 @@
 {
   "name": "forum-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "build": "echo 'No build step required for NodeJS' ",
-    "test": "echo \"No tests yet\" && exit 0"
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node server.js",
+    "start:prod": "node server.js",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed"
   },
   "keywords": [],
   "author": "",
@@ -33,22 +34,18 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.5.0",
     "nodemon": "^3.1.11",
     "prettier": "^3.6.2",
-    "prisma": "^6.19.0"
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
-  },
-    "scripts": {
-    "build": "prisma generate && tsc",
-    "start": "node dist/index.js",
-    "start:prod": "node dist/index.js",
-    "prisma:deploy": "prisma migrate deploy",
-    "prisma:seed": "prisma db seed"
   }
 }

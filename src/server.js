@@ -7,7 +7,12 @@ import logger from "./shared/logger/logger.js";
 import { registerNotificationSocket } from "./sockets/notification.socket.js";
 import { registerMessageSocket } from "./sockets/message.socket.js";
 import { registerProfileSocket } from "./sockets/profile.socket.js";
+import express from "express";
+const app = express();
 
+const port = process.env.PORT || 3000;
+app.get("/health", (_req, res) => res.send("ok"));
+app.listen(port, () => console.log(`API listening on ${port}`));
 
 dotenv.config();
 
