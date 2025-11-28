@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "prisma generate && tsc -p tsconfig.json",
-    "start": "node server.js",
-    "start:prod": "node server.js",
+    "start": "node src/server.js",
+    "start:prod": "node src/server.js",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed"
   },
