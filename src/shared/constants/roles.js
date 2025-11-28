@@ -1,14 +1,14 @@
 export const ROLES = {
   ADMIN: {
-    id: "ROLE-00001",
+    id: "ROLE001",
     name: "ADMIN"
   },
   MODERATOR: {
-    id: "ROLE-00002",
+    id: "ROLE002",
     name: "MODERATOR"
   },
   MEMBER: {
-    id: "ROLE-00003",
+    id: "ROLE003",
     name: "MEMBER"
   }
 };
