@@ -52,6 +52,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/reactions", reactionRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.use(
   /(.*)/,
