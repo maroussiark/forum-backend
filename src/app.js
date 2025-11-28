@@ -34,7 +34,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`, {
     ip: req.ip,
-    userAgent: req.headers["user-agent"],
+    userAgent: req.headers["user-agent"]
   });
   next();
 });
@@ -44,6 +44,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// health
+app.get("/health", (_req, res) => res.status(200).send("ok"));
+app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok" }));
+
+// api
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/profiles", profileRoutes);
@@ -52,19 +57,18 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/reactions", reactionRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.get('/health', (_req, res) => res.json({ ok: true }));
 
+// 404
 app.use(
   /(.*)/,
-  asyncHandler((req, res) => {
+  asyncHandler((_req, res) => {
     return res.status(404).json({
       status: 404,
       code: "NOT_FOUND",
-      message: "Route introuvable",
+      message: "Route introuvable"
     });
   })
 );
-
 
 app.use(errorHandler);
 
