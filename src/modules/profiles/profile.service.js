@@ -53,11 +53,13 @@ class ProfileService {
       }
     });
 
-    io.emit("profile:updated", {
-      userId: updated.userId,
-      avatarUrl: updated.avatarUrl,
-      fullName: updated.fullName
-    });
+    if (io) {
+      io.emit("profile:updated", {
+        userId: updated.userId,
+        avatarUrl: updated.avatarUrl,
+        fullName: updated.fullName
+      });
+    }
 
     return updated;
   }
