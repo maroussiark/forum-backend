@@ -4,13 +4,14 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { unauthorized, badRequest } from "../../shared/errors/ApiError.js";
 import { generateRandomToken, hashToken } from "./auth.utils.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 dotenv.config();
 
 class AuthService {
   generateAccessToken(user) {
     const isModerator =
-      user.roleId === "ROLE-00001" || user.roleId === "ROLE-00002";
+      user.roleId === ROLES.ADMIN.id || user.roleId === ROLES.MODERATOR.id;
 
     return jwt.sign(
       {
@@ -47,11 +48,12 @@ class AuthService {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+
     const user = await prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
-        roleId: "ROLE-00003",
+        roleId: ROLES.MEMBER.id,
       },
     });
 

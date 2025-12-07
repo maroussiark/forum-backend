@@ -20,7 +20,12 @@ import notificationRoutes from "./modules/notifications/notification.routes.js";
 
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, 
+    crossOriginOpenerPolicy: false,                        
+  })
+);
 app.use(cors({ origin: "*", credentials: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, max: 200 }));
 
@@ -29,7 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const uploadsPath = path.join(process.cwd(), "uploads");
+console.log("Serving uploads from:", uploadsPath);
+app.use("/uploads", express.static(uploadsPath));
 
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`, {
