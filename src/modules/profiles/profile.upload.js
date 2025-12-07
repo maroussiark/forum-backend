@@ -1,16 +1,15 @@
-import multer from "multer";
-import sharp from "sharp";
+import fs from "fs";
 import path from "path";
-
-const storage = multer.memoryStorage();
-
-export const uploadAvatar = multer({ storage }).single("avatar");
 
 export async function processAvatar(file) {
   if (!file) return null;
 
   const fileName = `avatar-${Date.now()}.webp`;
-  const outputPath = path.join("uploads", "avatars", fileName);
+  const dirPath = path.join("uploads", "avatars");
+  const outputPath = path.join(dirPath, fileName);
+
+  // s’assure que le dossier existe
+  fs.mkdirSync(dirPath, { recursive: true });
 
   await sharp(file.buffer)
     .resize(256, 256)
