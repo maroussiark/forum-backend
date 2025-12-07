@@ -6,6 +6,11 @@ import AttachmentService from "./attachment.service.js";
 import { prepareFiles } from "./attachment.upload.js";
 
 class PostService {
+
+  async getPostByUserId(userId,userConnected) {
+    return PostRepository.findByUserId(userId,userConnected);
+  }
+
   async create(userId, data, files) {
     const id = await generateId("post", "PST-");
 

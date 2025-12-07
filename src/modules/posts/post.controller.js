@@ -3,6 +3,12 @@ import FeedService from "./feed.service.js";
 import { success } from "../../utils/apiResponse.js";
 
 class PostController {
+
+  async getByUserId(req, res) {
+    const posts = await PostService.getPostByUserId(req.params.userId,req.user?.id);
+    return success(res, posts);
+  }
+
   async create(req, res) {
     const post = await PostService.create(req.user.id, req.body, req.files);
 

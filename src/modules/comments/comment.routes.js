@@ -12,7 +12,7 @@ import {
 const router = Router();
 
 router.get(
-  "/",
+  "/:postId",
   auth(),
   asyncHandler(CommentController.list)
 );

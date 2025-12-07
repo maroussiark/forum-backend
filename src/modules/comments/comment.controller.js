@@ -4,7 +4,7 @@ import { success } from "../../utils/apiResponse.js";
 class CommentController {
 
   async list(req, res) {
-    const result = await CommentService.list(req.query);
+    const result = await CommentService.list(req.params.postId);
     return success(res, result, "Liste des commentaires");
   }
   

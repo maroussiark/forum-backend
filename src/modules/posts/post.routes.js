@@ -14,6 +14,12 @@ import {
 const router = Router();
 
 router.get(
+  "/user/:userId",
+  auth(),
+  asyncHandler(PostController.getByUserId)
+);
+
+router.get(
   "/",
   auth(),
   validate(listPostsSchema, "query"),

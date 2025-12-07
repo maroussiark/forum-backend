@@ -3,6 +3,37 @@ import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 
 class PostRepository {
 
+async findByUserId(userId,userConnected) {
+  const posts = await prisma.post.findMany({
+    where: { userId, deleted: false },
+    include: {
+      user: { select: safeUserSelect },
+      attachments: true,
+      _count: { select: { comments: true, reactions: true } }
+    }
+  });
+   if (userConnected) {
+      for (const post of posts) {
+        const reaction = await prisma.reaction.findFirst({
+          where: {
+            postId: post.id,
+            userId: userConnected
+          },
+          select: {
+            id: true,
+            reactionType: true
+          }
+        });
+
+        post.myReaction = reaction || null;
+      }
+    } else {
+      for (const post of posts) post.myReaction = null;
+    }
+
+  return posts;
+}
+
   async create(data) {
     return prisma.post.create({
       data,

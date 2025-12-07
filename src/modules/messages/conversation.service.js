@@ -57,7 +57,7 @@ class ConversationService {
   async getMessages(conversationId, cursor, limit) {
     const messages = await prisma.message.findMany({
       where: { conversationId },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      orderBy: [{ createdAt: "asc" }, { id: "desc" }],
       take: limit + 1,
       ...(cursor
         ? {

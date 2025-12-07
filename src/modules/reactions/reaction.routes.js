@@ -19,7 +19,7 @@ router.post(
 router.delete(
   "/:reactionId",
   auth(),
-  requirePermission("REACTION_DELETE"),
+  // requirePermission("REACTION_DELETE"),
   asyncHandler(ReactionController.remove)
 );
 
