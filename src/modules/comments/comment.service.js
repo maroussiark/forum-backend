@@ -74,8 +74,8 @@ class CommentService {
     return prisma.comment.delete({ where: { id: commentId } });
   }
 
-  async list(postId, skip = 0, take = 20) {
-    return prisma.comment.findMany({
+  async list(postId, userId, skip = 0, take = 20) {
+    const comment = await prisma.comment.findMany({
       where: { postId },
       orderBy: { createdAt: "asc" },
       skip,
@@ -85,6 +85,25 @@ class CommentService {
         _count: { select: { reactions: true } },
       },
     });
+
+    if (userId) {
+      for (const coms of comment) {
+        const reaction = await prisma.reaction.findFirst({
+          where: {
+            commentId: coms.id,
+            userId: userId,
+          },
+          select: {
+            id: true,
+            reactionType: true,
+          },
+        });
+        coms.myReaction = reaction || null;
+      }
+    } else {
+      for (const coms of comment) coms.myReaction = null;
+    }
+    return comment;
   }
 }
 
