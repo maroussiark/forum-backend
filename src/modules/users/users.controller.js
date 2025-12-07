@@ -2,6 +2,10 @@ import UsersService from "./users.service.js";
 import { success } from "../../utils/apiResponse.js";
 
 class UsersController {
+  async getAllUsers(req, res) {
+    const users = await UsersService.getAllUsers();
+    return success(res, users);
+  }
 
   async getUser(req, res) {
     const user = await UsersService.getById(req.params.userId);
@@ -13,7 +17,7 @@ class UsersController {
       req.params.userId,
       req.user.id,
       req.user.isModerator,
-      req.body
+      req.body,
     );
 
     return success(res, updated, "Utilisateur mis à jour");
@@ -23,12 +27,11 @@ class UsersController {
     await UsersService.softDelete(
       req.params.userId,
       req.user.id,
-      req.user.isModerator
+      req.user.isModerator,
     );
 
     return success(res, null, "Utilisateur supprimé");
   }
-
 }
 
 export default new UsersController();

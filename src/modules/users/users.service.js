@@ -4,6 +4,15 @@ import { safeUserSelect } from "../../shared/selectors/safeUserSelect.js";
 
 class UsersService {
 
+  
+
+  async getAllUsers() {
+    return prisma.user.findMany({
+      where: { deletedAt: null },
+      select: safeUserSelect
+    });
+  }
+
   async getById(userId) {
     const user = await prisma.user.findFirst({
       where: { id: userId, deletedAt: null },

@@ -198,7 +198,7 @@ model ConversationMember {
 }
 
 model Message {
-  id              String   @id
+  id             String        @id @default(cuid())
   conversationId  String
   senderId        String
   content         String?

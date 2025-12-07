@@ -8,6 +8,8 @@ import { requirePermission } from "../../middlewares/requirePermission.js";
 
 const router = Router();
 
+router.get("/", asyncHandler(UsersController.getAllUsers));
+
 router.get(
   "/:userId",
   asyncHandler(UsersController.getUser)
