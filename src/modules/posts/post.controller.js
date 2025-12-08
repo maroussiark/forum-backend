@@ -42,15 +42,20 @@ class PostController {
   }
 
   async list(req, res) {
-    const { page, limit, categoryId } = req.query;
-    const posts = await FeedService.list(
-      Number(page),
-      Number(limit),
-      categoryId,
-      req.user?.id
-    );
-    return success(res, posts);
-  }
+  // Valeurs avec fallback si aucun query param
+  const page = Number(req.query.page ?? 1);
+  const limit = Number(req.query.limit ?? 10);
+  const { categoryId } = req.query;
+
+  const posts = await FeedService.list(
+    page,
+    limit,
+    categoryId,
+    req.user?.id
+  );
+
+  return success(res, posts);
+}
 }
 
 export default new PostController();
