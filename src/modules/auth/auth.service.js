@@ -17,10 +17,10 @@ class AuthService {
       {
         id: user.id,
         roleId: user.roleId,
-        isModerator,
+        isModerator
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES },
+      { expiresIn: process.env.JWT_EXPIRES }
     );
   }
 
@@ -34,7 +34,7 @@ class AuthService {
         userId,
         tokenHash: hashed,
         expiresAt
-      },
+      }
     });
 
     return refreshToken;
@@ -42,68 +42,81 @@ class AuthService {
 
   async register(data) {
     const exists = await prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email: data.email }
     });
     if (exists) throw badRequest("Email déjà utilisé");
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-
-    const user = await prisma.user.create({
+    const created = await prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
-        roleId: ROLES.MEMBER.id,
-      },
+        roleId: ROLES.MEMBER.id
+      }
     });
 
     await prisma.userProfile.create({
       data: {
-        userId: user.id,
+        userId: created.id,
         fullName: data.fullName,
         bio: "",
         avatarUrl: "",
         phone: "",
-        socialLinks: {},
-      },
+        socialLinks: {}
+      }
     });
 
-    const permissions = await this.getPermissions(user.roleId);
+    const user = await prisma.user.findUnique({
+      where: { id: created.id },
+      include: { profile: true, role: true }
+    });
 
-    const accessToken = this.generateAccessToken(user, permissions);
+    const accessToken = this.generateAccessToken(user);
     const refreshToken = await this.generateAndStoreRefreshToken(user.id);
 
     return {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.profile?.fullName ?? "",
+        roleId: user.roleId,
+        roleName: user.role?.name ?? null,
+        isModerator:
+          user.roleId === ROLES.ADMIN.id || user.roleId === ROLES.MODERATOR.id
       },
       accessToken,
-      refreshToken,
+      refreshToken
     };
   }
 
   async login(data) {
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+      include: { profile: true, role: true }
+    });
     if (!user) throw unauthorized("Identifiants invalides");
+    if (user.deletedAt) throw unauthorized("Compte supprimé");
+    if (user.blockedAt) throw unauthorized("Compte bloqué");
 
     const match = await bcrypt.compare(data.password, user.password);
     if (!match) throw unauthorized("Identifiants invalides");
 
-    const permissions = await this.getPermissions(user.roleId);
-
-    const accessToken = this.generateAccessToken(user, permissions);
+    const accessToken = this.generateAccessToken(user);
     const refreshToken = await this.generateAndStoreRefreshToken(user.id);
 
     return {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.profile?.fullName ?? "",
+        roleId: user.roleId,
+        roleName: user.role?.name ?? null,
+        isModerator:
+          user.roleId === ROLES.ADMIN.id || user.roleId === ROLES.MODERATOR.id
       },
       accessToken,
-      refreshToken,
+      refreshToken
     };
   }
 
@@ -111,20 +124,21 @@ class AuthService {
     const hashed = hashToken(refreshToken);
 
     const stored = await prisma.refreshToken.findFirst({
-      where: { tokenHash: hashed },
+      where: { tokenHash: hashed }
     });
 
     if (!stored) throw unauthorized("Refresh token invalide");
 
     const user = await prisma.user.findUnique({
       where: { id: stored.userId },
+      include: { role: true, profile: true }
     });
 
     if (!user) throw unauthorized("Utilisateur non trouvé");
+    if (user.deletedAt) throw unauthorized("Compte supprimé");
+    if (user.blockedAt) throw unauthorized("Compte bloqué");
 
-    const permissions = await this.getPermissions(user.roleId);
-
-    const accessToken = this.generateAccessToken(user, permissions);
+    const accessToken = this.generateAccessToken(user);
 
     await prisma.refreshToken.delete({ where: { id: stored.id } });
 
@@ -136,7 +150,7 @@ class AuthService {
   async getPermissions(roleId) {
     const permissions = await prisma.rolePermission.findMany({
       where: { roleId },
-      include: { permission: true },
+      include: { permission: true }
     });
 
     return permissions.map((p) => p.permission.name);

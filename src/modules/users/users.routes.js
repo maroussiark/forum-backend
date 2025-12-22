@@ -8,10 +8,17 @@ import { requirePermission } from "../../middlewares/requirePermission.js";
 
 const router = Router();
 
-router.get("/", asyncHandler(UsersController.getAllUsers));
+router.get(
+  "/",
+  auth(),
+  requirePermission("ADMIN_PANEL"),
+  asyncHandler(UsersController.getAllUsers)
+);
 
 router.get(
   "/:userId",
+  auth(),
+  requirePermission("ADMIN_PANEL"),
   asyncHandler(UsersController.getUser)
 );
 
@@ -29,6 +36,5 @@ router.delete(
   requirePermission("USER_DELETE"),
   asyncHandler(UsersController.deleteUser)
 );
-
 
 export default router;

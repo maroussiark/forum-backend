@@ -16,24 +16,24 @@ datasource db {
 model User {
   id                 String              @id @default(uuid())
   email              String              @unique
-  password          String
-  roleId            String
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  deletedAt         DateTime?
+  password           String
+  roleId             String
+  blockedAt          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
 
+  role               Role                @relation(fields: [roleId], references: [id])
+  profile            UserProfile?
 
-  role              Role                 @relation(fields: [roleId], references: [id])
-  profile           UserProfile?
-
-  posts             Post[]
-  comments          Comment[]
-  reactions         Reaction[]
-  messages          Message[]
+  posts              Post[]
+  comments           Comment[]
+  reactions          Reaction[]
+  messages           Message[]
   conversationMembers ConversationMember[]
-  refreshTokens     RefreshToken[]
+  refreshTokens      RefreshToken[]
 
-  notifications     Notification[]       @relation("UserNotifications")
+  notifications      Notification[]      @relation("UserNotifications")
   actorNotifications Notification[]      @relation("ActorNotifications")
 }
 
@@ -236,7 +236,7 @@ enum NotificationType {
   POST_CREATED
   POST_COMMENTED
   POST_REACTED
-  
+
   COMMENT_REACTED
   COMMENT_REPLIED
 
@@ -264,4 +264,3 @@ model RefreshToken {
 
   user      User     @relation(fields: [userId], references: [id])
 }
-

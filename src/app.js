@@ -17,13 +17,14 @@ import commentRoutes from "./modules/comments/comment.routes.js";
 import reactionRoutes from "./modules/reactions/reaction.routes.js";
 import messageRoutes from "./modules/messages/messages.routes.js";
 import notificationRoutes from "./modules/notifications/notification.routes.js";
+import adminRoutes from "./modules/admin/admin.routes.js";
 
 const app = express();
 
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }, 
-    crossOriginOpenerPolicy: false,                        
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: false
   })
 );
 app.use(cors({ origin: "*", credentials: true }));
@@ -64,6 +65,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/reactions", reactionRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/admin", adminRoutes);
 
 // 404
 app.use(
