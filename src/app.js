@@ -24,58 +24,37 @@ const app = express();
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginOpenerPolicy: false
+    crossOriginOpenerPolicy: false,
   })
 );
 app.use(cors({ origin: "*", credentials: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, max: 200 }));
-
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(compression());
+app.use(cookieParser());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-const uploadsPath = path.join(process.cwd(), "uploads");
-console.log("Serving uploads from:", uploadsPath);
-app.use("/uploads", express.static(uploadsPath));
+// Static uploads
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.originalUrl}`, {
-    ip: req.ip,
-    userAgent: req.headers["user-agent"]
-  });
-  next();
-});
-
-app.use((req, res, next) => {
-  req.io = global.io || null;
-  next();
-});
-
-// health
-app.get("/health", (_req, res) => res.status(200).send("ok"));
-app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok" }));
-
-// api
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/profiles", profileRoutes);
+app.use("/api/profile", profileRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/reactions", reactionRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
+
+// ✅ Admin
 app.use("/api/admin", adminRoutes);
 
-// 404
-app.use(
-  /(.*)/,
-  asyncHandler((_req, res) => {
-    return res.status(404).json({
-      status: 404,
-      code: "NOT_FOUND",
-      message: "Route introuvable"
-    });
+// Health
+app.get(
+  "/health",
+  asyncHandler(async (req, res) => {
+    return res.json({ ok: true });
   })
 );
 

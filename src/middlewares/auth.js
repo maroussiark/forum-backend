@@ -1,22 +1,40 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+import prisma from "../config/database.js";
+import { unauthorized } from "../shared/errors/ApiError.js";
+import { ROLES } from "../shared/constants/roles.js";
 
 export const auth = () => {
-  return (req, res, next) => {
-    const header = req.headers.authorization;
-    if (!header) return next({ status: 401, message: "Token manquant" });
+  return async (req, res, next) => {
+    const header = req.headers.authorization || "";
+    const token = header.startsWith("Bearer ") ? header.slice(7) : null;
 
-    const token = header.split(" ")[1];
-    if (!token) return next({ status: 401, message: "Token invalide" });
+    if (!token) return next(unauthorized("Authentification requise"));
 
     try {
-      // eslint-disable-next-line no-undef
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded; // { id, roleId }
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true, roleId: true, deletedAt: true, blockedAt: true },
+      });
+
+      if (!dbUser || dbUser.deletedAt) {
+        return next(unauthorized("Compte introuvable ou supprimé"));
+      }
+      if (dbUser.blockedAt) {
+        return next(unauthorized("Compte bloqué"));
+      }
+
+      req.user = {
+        id: dbUser.id,
+        roleId: dbUser.roleId,
+        isModerator:
+          dbUser.roleId === ROLES.ADMIN.id || dbUser.roleId === ROLES.MODERATOR.id,
+      };
+
       next();
-    } catch {
-      next({ status: 401, message: "Token expiré ou invalide" });
+    } catch (e) {
+      return next(unauthorized("Token invalide"));
     }
   };
 };

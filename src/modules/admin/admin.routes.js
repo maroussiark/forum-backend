@@ -1,29 +1,42 @@
 import { Router } from "express";
-import { auth } from "../../middlewares/auth.js";
-import { requirePermission } from "../../middlewares/requirePermission.js";
-import { asyncHandler } from "../../shared/middlewares/asyncHandler.js";
 import AdminController from "./admin.controller.js";
+import { asyncHandler } from "../../shared/middlewares/asyncHandler.js";
+import { validate } from "../../shared/middlewares/validate.js";
+import { auth } from "../../middlewares/auth.js";
+import prisma from "../../config/database.js";
+import {
+  listAdminSchema,
+  setUserRoleSchema,
+  setUserBlockedSchema,
+  setVisibilitySchema,
+} from "./admin.validator.js";
 
 const router = Router();
 
-router.use(auth(), requirePermission("ADMIN_PANEL"));
+router.use(auth());
+
+// ✅ guard admin (par Role.name)
+router.use(async (req, res, next) => {
+  const u = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { role: { select: { name: true } } },
+  });
+  if (!u || u.role.name !== "ADMIN") return res.status(403).json({ message: "Forbidden" });
+  next();
+});
 
 router.get("/stats", asyncHandler(AdminController.stats));
+router.get("/roles", asyncHandler(AdminController.roles));
 
-// Users
-router.get("/users", asyncHandler(AdminController.listUsers));
-router.patch("/users/:userId/role", asyncHandler(AdminController.setUserRole));
-router.patch("/users/:userId/block", asyncHandler(AdminController.setUserBlock));
+router.get("/users", validate(listAdminSchema, "query"), asyncHandler(AdminController.listUsers));
+router.patch("/users/:userId/role", validate(setUserRoleSchema), asyncHandler(AdminController.setUserRole));
+router.patch("/users/:userId/block", validate(setUserBlockedSchema), asyncHandler(AdminController.setUserBlocked));
 router.delete("/users/:userId", asyncHandler(AdminController.deleteUser));
 
-// Moderation posts/comments
-router.get("/posts", asyncHandler(AdminController.listPosts));
-router.patch("/posts/:postId/visibility", asyncHandler(AdminController.setPostVisibility));
+router.get("/posts", validate(listAdminSchema, "query"), asyncHandler(AdminController.listPosts));
+router.patch("/posts/:postId/visibility", validate(setVisibilitySchema), asyncHandler(AdminController.setPostVisibility));
 
-router.get("/comments", asyncHandler(AdminController.listComments));
-router.patch(
-  "/comments/:commentId/visibility",
-  asyncHandler(AdminController.setCommentVisibility)
-);
+router.get("/comments", validate(listAdminSchema, "query"), asyncHandler(AdminController.listComments));
+router.patch("/comments/:commentId/visibility", validate(setVisibilitySchema), asyncHandler(AdminController.setCommentVisibility));
 
 export default router;
