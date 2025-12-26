@@ -16,27 +16,22 @@ export const auth = () => {
         where: { id: decoded.id },
         select: {
           id: true,
+          email: true,
           roleId: true,
-          role: { select: { name: true } },
           deletedAt: true,
           blockedAt: true,
+          role: { select: { name: true } }, // ✅
         },
       });
 
-      if (!dbUser || dbUser.deletedAt) {
-        return next(unauthorized("Compte introuvable ou supprimé"));
-      }
-      if (dbUser.blockedAt) {
-        return next(unauthorized("Compte bloqué"));
-      }
-
-      const roleName = (dbUser.role?.name || "").toUpperCase();
+      if (!dbUser || dbUser.deletedAt) return next(unauthorized("Compte introuvable ou supprimé"));
+      if (dbUser.blockedAt) return next(unauthorized("Compte bloqué"));
 
       req.user = {
         id: dbUser.id,
-        roleId: dbUser.roleId,     // on garde si utile ailleurs
-        role: roleName,            // ✅ IMPORTANT
-        isModerator: roleName === "ADMIN" || roleName === "MODERATOR",
+        email: dbUser.email,
+        roleId: dbUser.roleId,
+        roleName: dbUser.role?.name || null, // ✅
       };
 
       next();

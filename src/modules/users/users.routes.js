@@ -5,8 +5,16 @@ import { validate } from "../../shared/middlewares/validate.js";
 import { updateUserSchema } from "./users.validator.js";
 import { auth } from "../../middlewares/auth.js";
 import { requirePermission } from "../../middlewares/requirePermission.js";
+import { requireRole } from "../../middlewares/requireRole.js";
 
 const router = Router();
+
+router.get(
+  "/users",
+  auth(),
+  requireRole("ADMIN"),
+  UsersController.listUsers
+);
 
 router.get(
   "/",
