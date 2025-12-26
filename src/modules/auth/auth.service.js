@@ -54,7 +54,7 @@ class AuthService {
 
   async login(email, password) {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email }, // ✅ string
       select: {
         id: true,
         email: true,
@@ -63,7 +63,8 @@ class AuthService {
         createdAt: true,
         deletedAt: true,
         blockedAt: true,
-        profile: { select: { fullName: true } },
+        role: { select: { name: true } },
+        profile: { select: { fullName: true, avatarUrl: true } },
       },
     });
 
@@ -73,23 +74,23 @@ class AuthService {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) throw unauthorized("Identifiants invalides");
 
-    const accessToken = this.generateAccessToken({
-      id: user.id,
-      roleId: user.roleId,
-    });
-
-    const refreshToken = await this.createRefreshToken(user.id);
+    const accessToken = jwt.sign(
+      { id: user.id, roleId: user.roleId, roleName: user.role?.name },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
 
     return {
       user: {
         id: user.id,
         email: user.email,
         roleId: user.roleId,
+        roleName: user.role?.name,
         fullName: user.profile?.fullName ?? "",
+        avatarUrl: user.profile?.avatarUrl ?? "",
         createdAt: user.createdAt,
       },
       accessToken,
-      refreshToken,
     };
   }
 
