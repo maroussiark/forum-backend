@@ -1,17 +1,30 @@
+import { forbidden } from "../shared/errors/ApiError.js";
+import { ROLES } from "../shared/constants/roles.js";
+
+function resolveRoleCodeFromRoleId(roleId) {
+  if (!roleId || !ROLES) return null;
+
+  const entries = Object.values(ROLES);
+  for (const r of entries) {
+    if (!r) continue;
+    if (r.id === roleId) return r.code || r.name || r.key || null;
+  }
+  return null;
+}
+
 export const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!req.user)
-      return next({ status: 401, message: "Utilisateur non authentifié" });
+    if (!req.user) throw forbidden("Authentification requise");
 
-    const roleName = (req.user.roleName || req.user.role || "").toUpperCase();
-    const roleId = req.user.roleId;
+    const roleId = req.user.roleId || null;
+    const roleCode = req.user.role || req.user.roleCode || resolveRoleCodeFromRoleId(roleId);
 
-    const allowed = allowedRoles.map((r) => String(r).toUpperCase());
+    // On accepte que allowedRoles contienne des roleId OU des codes ("ADMIN")
+    const ok =
+      (roleId && allowedRoles.includes(roleId)) ||
+      (roleCode && allowedRoles.includes(roleCode));
 
-    // accepte si on a passé des noms (ADMIN/MODERATOR/...) OU des ids (UUID)
-    const ok = allowed.includes(roleName) || allowed.includes(String(roleId).toUpperCase());
-
-    if (!ok) return next({ status: 403, message: "Accès interdit" });
+    if (!ok) throw forbidden("Accès interdit");
 
     next();
   };
