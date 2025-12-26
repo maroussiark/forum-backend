@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import prisma from "../config/database.js";
 import { unauthorized } from "../shared/errors/ApiError.js";
+import { ROLES } from "../shared/constants/roles.js";
 
 export const auth = () => {
   return async (req, res, next) => {
@@ -16,22 +17,29 @@ export const auth = () => {
         where: { id: decoded.id },
         select: {
           id: true,
-          email: true,
           roleId: true,
           deletedAt: true,
           blockedAt: true,
-          role: { select: { name: true } }, // ✅
+          role: { select: { id: true, name: true } },
         },
       });
 
-      if (!dbUser || dbUser.deletedAt) return next(unauthorized("Compte introuvable ou supprimé"));
-      if (dbUser.blockedAt) return next(unauthorized("Compte bloqué"));
+      if (!dbUser || dbUser.deletedAt) {
+        return next(unauthorized("Compte introuvable ou supprimé"));
+      }
+      if (dbUser.blockedAt) {
+        return next(unauthorized("Compte bloqué"));
+      }
+
+      const roleId = dbUser.role?.id || dbUser.roleId;
+      const roleName = dbUser.role?.name || decoded?.roleName || null;
 
       req.user = {
         id: dbUser.id,
-        email: dbUser.email,
-        roleId: dbUser.roleId,
-        roleName: dbUser.role?.name || null, // ✅
+        roleId,
+        roleName,
+        isModerator:
+          roleId === ROLES.ADMIN.id || roleId === ROLES.MODERATOR.id,
       };
 
       next();
