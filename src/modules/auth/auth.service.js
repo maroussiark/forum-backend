@@ -155,6 +155,79 @@ class AuthService {
 
     return permissions.map((p) => p.permission.name);
   }
+
+  // src/modules/auth/auth.service.js
+
+async login(data) {
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+    include: { profile: { select: { fullName: true } } }
+  });
+  if (!user) throw unauthorized("Identifiants invalides");
+
+  const match = await bcrypt.compare(data.password, user.password);
+  if (!match) throw unauthorized("Identifiants invalides");
+
+  const accessToken = this.generateAccessToken(user);
+  const refreshToken = await this.generateAndStoreRefreshToken(user.id);
+
+  const isModerator = user.roleId === ROLES.ADMIN.id || user.roleId === ROLES.MODERATOR.id;
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      roleId: user.roleId,
+      isModerator,
+      fullName: user.profile?.fullName || "",
+    },
+    accessToken,
+    refreshToken,
+  };
+}
+
+async register(data) {
+  const exists = await prisma.user.findUnique({ where: { email: data.email } });
+  if (exists) throw badRequest("Email déjà utilisé");
+
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      email: data.email,
+      password: hashedPassword,
+      roleId: ROLES.MEMBER.id,
+      profile: {
+        create: {
+          fullName: data.fullName,
+          bio: "",
+          avatarUrl: "",
+          phone: "",
+          socialLinks: {},
+        }
+      }
+    },
+    include: { profile: { select: { fullName: true } } }
+  });
+
+  const accessToken = this.generateAccessToken(user);
+  const refreshToken = await this.generateAndStoreRefreshToken(user.id);
+
+  const isModerator = user.roleId === ROLES.ADMIN.id || user.roleId === ROLES.MODERATOR.id;
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      roleId: user.roleId,
+      isModerator,
+      fullName: user.profile?.fullName || "",
+    },
+    accessToken,
+    refreshToken,
+  };
+}
+
 }
 
 export default new AuthService();
