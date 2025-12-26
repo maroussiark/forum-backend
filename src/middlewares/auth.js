@@ -15,7 +15,13 @@ export const auth = () => {
 
       const dbUser = await prisma.user.findUnique({
         where: { id: decoded.id },
-        select: { id: true, roleId: true, deletedAt: true, blockedAt: true },
+        select: {
+          id: true,
+          roleId: true,
+          deletedAt: true,
+          blockedAt: true,
+          role: { select: { name: true } }, // ✅
+        },
       });
 
       if (!dbUser || dbUser.deletedAt) {
@@ -25,11 +31,18 @@ export const auth = () => {
         return next(unauthorized("Compte bloqué"));
       }
 
+      const roleName = dbUser.role?.name || null;
+
       req.user = {
         id: dbUser.id,
         roleId: dbUser.roleId,
+        roleName, // ✅
+        // ✅ priorité au roleName, fallback si jamais vous aviez des ids “fixes”
         isModerator:
-          dbUser.roleId === ROLES.ADMIN.id || dbUser.roleId === ROLES.MODERATOR.id,
+          roleName === "ADMIN" ||
+          roleName === "MODERATOR" ||
+          dbUser.roleId === ROLES.ADMIN.id ||
+          dbUser.roleId === ROLES.MODERATOR.id,
       };
 
       next();
