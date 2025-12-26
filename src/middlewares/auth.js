@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import prisma from "../config/database.js";
 import { unauthorized } from "../shared/errors/ApiError.js";
-import { ROLES } from "../shared/constants/roles.js";
 
 export const auth = () => {
   return async (req, res, next) => {
@@ -18,9 +17,9 @@ export const auth = () => {
         select: {
           id: true,
           roleId: true,
+          role: { select: { name: true } },
           deletedAt: true,
           blockedAt: true,
-          role: { select: { name: true } }, // ✅
         },
       });
 
@@ -31,18 +30,13 @@ export const auth = () => {
         return next(unauthorized("Compte bloqué"));
       }
 
-      const roleName = dbUser.role?.name || null;
+      const roleName = (dbUser.role?.name || "").toUpperCase();
 
       req.user = {
         id: dbUser.id,
-        roleId: dbUser.roleId,
-        roleName, // ✅
-        // ✅ priorité au roleName, fallback si jamais vous aviez des ids “fixes”
-        isModerator:
-          roleName === "ADMIN" ||
-          roleName === "MODERATOR" ||
-          dbUser.roleId === ROLES.ADMIN.id ||
-          dbUser.roleId === ROLES.MODERATOR.id,
+        roleId: dbUser.roleId,     // on garde si utile ailleurs
+        role: roleName,            // ✅ IMPORTANT
+        isModerator: roleName === "ADMIN" || roleName === "MODERATOR",
       };
 
       next();
