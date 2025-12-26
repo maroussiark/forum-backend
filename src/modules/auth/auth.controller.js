@@ -10,8 +10,9 @@ class AuthController {
   }
 
   async login(req, res) {
-    const data = await AuthService.login(req.body);
-    return success(res, data, "Connexion réussie");
+    const { email, password } = req.body;
+const data = await AuthService.login(email, password);
+return success(res, data, "Connexion réussie");
   }
 
   async refresh(req, res) {
