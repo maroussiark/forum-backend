@@ -1,5 +1,25 @@
 import prisma from "../../config/database.js";
 import { notFound } from "../../shared/errors/ApiError.js";
+import { z } from "zod";
+
+export const listAdminSchema = z.object({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  q: z.string().optional().default(""),
+  includeDeleted: z.coerce.boolean().optional().default(false),
+});
+
+export const setUserRoleSchema = z.object({
+  roleId: z.string().min(1),
+});
+
+export const setUserBlockedSchema = z.object({
+  blocked: z.boolean(),
+});
+
+export const setVisibilitySchema = z.object({
+  deleted: z.boolean(),
+});
 
 const safeUserSelect = {
   id: true,
