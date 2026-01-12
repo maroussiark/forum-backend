@@ -41,7 +41,12 @@ async function main() {
   console.log("⚙ Mapping Role → Permissions...");
 
   for (const [roleName, permList] of Object.entries(ACL)) {
-    const roleId = roleIds[roleName];
+    // ACL may be keyed by role name (e.g. 'ADMIN') or by role id (e.g. 'ROLE001').
+    // Resolve to the actual roleId: prefer mapped id by name, otherwise assume
+    // the key is already the roleId.
+    const roleId = roleIds[roleName] || roleName;
+
+    if (!roleId) continue;
 
     for (const permName of permList) {
       const permId = permissionsMap[permName];
@@ -68,7 +73,9 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@example.com" },
-    update: {},
+    // ensure existing admin user gets the ADMIN role (fixes cases where an account
+    // existed previously with MEMBER role and shouldn't remain a MEMBER)
+    update: { roleId: ROLES.ADMIN.id },
     create: {
       id: "USER-ADMIN-00001",
       email: "admin@example.com",
