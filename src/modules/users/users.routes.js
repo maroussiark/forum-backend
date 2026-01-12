@@ -11,21 +11,18 @@ const router = Router();
 router.get(
   "/",
   auth(),
-  requirePermission("ADMIN_PANEL"),
   asyncHandler(UsersController.getAllUsers)
 );
 
 router.get(
   "/:userId",
   auth(),
-  requirePermission("ADMIN_PANEL"),
   asyncHandler(UsersController.getUser)
 );
 
 router.put(
   "/:userId",
   auth(),
-  requirePermission("PROFILE_UPDATE"),
   validate(updateUserSchema),
   asyncHandler(UsersController.updateUser)
 );
@@ -33,7 +30,6 @@ router.put(
 router.delete(
   "/:userId",
   auth(),
-  requirePermission("USER_DELETE"),
   asyncHandler(UsersController.deleteUser)
 );
 
