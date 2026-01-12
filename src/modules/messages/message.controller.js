@@ -16,13 +16,12 @@ class MessageController {
   }
 
   async send(req, res) {
+      const io = req.app.get("io");
     const msg = await ConversationService.sendMessage(
       req.body.conversationId,
       req.user.id,
-      req.body.content,req.io
+      req.body.content,io
     );
-
-    req.io.to(req.body.conversationId).emit("message:new", msg);
 
     return success(res, msg, "Message envoyé");
   }
