@@ -24,7 +24,6 @@ router.post(
 router.get(
   "/conversations",
   auth(),
-  requirePermission("CONVERSATION_LIST"),
   asyncHandler(ConversationController.listConversations)
 );
 
