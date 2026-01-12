@@ -34,6 +34,11 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, _res, next) => {
+  req.io = req.app.get("io");
+  next();
+});
+
 // Static uploads
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

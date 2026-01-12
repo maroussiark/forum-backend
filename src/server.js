@@ -15,6 +15,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }
 });
+app.set("io", io);
 global.io = io;
 
 registerNotificationSocket(io);

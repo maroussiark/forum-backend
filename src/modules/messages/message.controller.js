@@ -16,7 +16,7 @@ class MessageController {
   }
 
   async send(req, res) {
-      const io = req.io;
+      const io = req.app.get("io");
     const msg = await ConversationService.sendMessage(
       req.body.conversationId,
       req.user.id,
