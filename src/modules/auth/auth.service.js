@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { badRequest, unauthorized } from "../../shared/errors/ApiError.js";
 import { ROLES } from "../../shared/constants/roles.js";
+import crypto from "crypto";
 
 class AuthService {
   async register(data) {
@@ -102,10 +103,12 @@ class AuthService {
     const token = jwt.sign({ userId }, process.env.REFRESH_SECRET, {
       expiresIn: "30d",
     });
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
     await prisma.refreshToken.create({
       data: {
         token,
+        tokenHash,
         userId,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
