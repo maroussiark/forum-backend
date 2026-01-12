@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import logger from "./shared/logger/logger.js";
 import fs from "fs/promises";
-import uploadConfig from './config/upload.config';
+import uploadConfig from './config/upload.config.js';
 import { registerNotificationSocket } from "./sockets/notification.socket.js";
 import { registerMessageSocket } from "./sockets/message.socket.js";
 import { registerProfileSocket } from "./sockets/profile.socket.js";
