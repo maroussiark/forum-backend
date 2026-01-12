@@ -32,6 +32,14 @@ class AdminService {
     });
   }
 
+  async getCurrentUser(userId) {
+    // reuse safeUserSelect to return consistent public user shape
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: safeUserSelect,
+    });
+  }
+
   async listUsers({ page = 1, limit = 20, q = "", includeDeleted = false }) {
     const skip = (page - 1) * limit;
 

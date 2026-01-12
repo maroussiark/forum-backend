@@ -15,6 +15,13 @@ const router = Router();
 
 router.use(auth());
 
+// expose a lightweight current-user endpoint for the admin frontend to check
+// the authenticated user's role without requiring the admin guard
+router.get(
+  "/me",
+  asyncHandler(AdminController.me)
+);
+
 // ✅ guard admin (par Role.name)
 router.use(async (req, res, next) => {
   const u = await prisma.user.findUnique({

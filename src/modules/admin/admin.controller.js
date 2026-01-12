@@ -5,6 +5,11 @@ class AdminController {
   async stats(req, res) {
     return success(res, await AdminService.stats(), "Stats admin");
   }
+  async me(req, res) {
+    // return a detailed current user payload for admin frontend checks
+    const data = await AdminService.getCurrentUser(req.user.id);
+    return success(res, data, "Utilisateur courant");
+  }
   async roles(req, res) {
     return success(res, await AdminService.roles(), "Rôles");
   }
